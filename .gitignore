@@ -1,0 +1,7 @@
+Labs/Lab*/*_cache
+Labs/Lab*/*_files
+Labs/Lab*/*.RData
+Labs/Lab*/*fcs
+Labs/Lab*/*csv
+
+
