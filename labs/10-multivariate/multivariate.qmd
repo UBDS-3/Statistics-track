@@ -1,7 +1,7 @@
 ---
 title: "Lab: Multivariate Analysis"
-author: "Bio Data Science^3"
-date: "July 19 - August 2, 2025"
+author: "Wolfgang Huber, Helena Crowell, et al."
+date: "22 July 2025"
 format: 
   html:
     code-fold: false
@@ -44,6 +44,9 @@ install_if_needed(c("GGally", "factoextra", "ade4"))
 ```
 
 Obtain data sets that we will be working with.
+
+### TODO
+**replace with local files.**
 
 ```{r}
 #| label: turtlesload
