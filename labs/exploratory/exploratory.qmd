@@ -1,0 +1,22 @@
+---
+title: "Exploratory Data Analysis"
+author: "Bio Data Science^3"
+date: "July 19 - August 2, 2025"
+format: 
+  html:
+    toc: true 
+    code-fold: false
+    code-tools: true
+    embed-resources: true
+    highlight-style: github
+    code-line-numbers: false 
+params:
+  skip_execution: false
+  skip_answers: true
+---
+
+```{r}
+#| label: initialize
+#| echo: FALSE
+knitr::opts_chunk$set(echo = TRUE, fig.width=7, fig.height=5) 
+```
