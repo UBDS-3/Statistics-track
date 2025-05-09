@@ -1,2 +1,2 @@
-# UBDS3-2024
-Teaching material for the Ukrainian Biological Data Science Summer School 2024
+# UBDS3-2025
+Teaching material for the Ukrainian Biological Data Science Summer School 2025
