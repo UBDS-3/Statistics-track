@@ -20,6 +20,8 @@ params:
 knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 ```
 
+License: CC-BY NC SA
+
 # Goal
 
 In this lab we will learn the basics of multivariate analysis and PCA using a few simple examples.
