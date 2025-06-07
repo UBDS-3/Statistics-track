@@ -1,0 +1,84 @@
+---
+title: "Randomness of data off linear subspaces"
+author: "Bio Data Science^3"
+date: "July 19 - August 2, 2025"
+format: 
+  html:
+    toc: true 
+    code-fold: false
+    code-tools: true
+    embed-resources: true
+    highlight-style: github
+    code-line-numbers: false 
+params:
+  skip_execution: false
+  skip_answers: true
+---
+
+```{r}
+#| label: initialize
+#| echo: FALSE
+knitr::opts_chunk$set(echo = TRUE, fig.width=7, fig.height=5) 
+```
+
+## Introduction
+
+In this document, we'll explore when we have data which is spread randomly off
+of a linear subspace. In other words, this document covers the use case of
+linear regression/linear models, and _projection_, a concept from linear
+algebra.
+
+## Randomness off a line
+
+$$y = a + b x + \varepsilon$$
+
+$\varepsilon$ is "extra"
+
+```{r}
+set.seed(5)
+n <- 1000
+x <- rnorm(n, sd=0.5)
+hist(x)
+var(x)
+x <- qnorm(p=1:n/(n+1), sd=0.5)
+hist(x)
+var(x)
+x <- rep(0:1, each=n/2)
+var(x)
+```
+
+```{r}
+n <- 20
+extra_sd <- 1
+extra <- rnorm(n, sd=extra_sd)
+a <- 5
+x <- rep(0:1, each=n/2)
+b <- 0
+y <- a + b * x + extra
+plot(x, y)
+extra_sd <- 0.01
+extra <- rnorm(n, sd=extra_sd)
+b <- 3
+y <- a + b * x + extra
+plot(x, y)
+```
+
+a and b are unknown, x is known. None are considered "random"
+
+$\varepsilon$ is not known, need to estimate A, B, $\varepsilon$ using x
+and y
+
+# Estimation of a, b and extra
+
+# Projection onto linear subspace
+
+"normal equations" -- "normal" in the linear algebra sense of orthogonal
+
+# Analysis of variance
+
+What about when the space is big? Issues with estimation?
+
+What about when columns of X are correlated, how does this effect estimation of b
+
+What about wiggliness? Can we still use linear model?
+
