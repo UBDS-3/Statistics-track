@@ -23,10 +23,7 @@ knitr::opts_chunk$set(echo = TRUE, fig.width=7, fig.height=5)
 
 ## Introduction
 
-In this document, we'll explore when we have data which is spread randomly off
-of a linear subspace. In other words, this document covers the use case of
-linear regression/linear models, and _projection_, a concept from linear
-algebra.
+In this document, we'll explore when we have data which is spread randomly off of a linear subspace. In other words, this document covers the use case of linear regression/linear models, and *projection*, a concept from linear algebra.
 
 ## Randomness off a line
 
@@ -38,12 +35,15 @@ $\varepsilon$ is "extra"
 set.seed(5)
 n <- 1000
 x <- rnorm(n, sd=0.5)
+head(x)
 hist(x)
 var(x)
 x <- qnorm(p=1:n/(n+1), sd=0.5)
+head(x)
 hist(x)
 var(x)
-x <- rep(0:1, each=n/2)
+x <- rep(0:1, length.out=n)
+head(x)
 var(x)
 ```
 
@@ -51,28 +51,116 @@ var(x)
 n <- 20
 extra_sd <- 1
 extra <- rnorm(n, sd=extra_sd)
-a <- 5
+a <- 3
 x <- rep(0:1, each=n/2)
 b <- 0
 y <- a + b * x + extra
 plot(x, y)
-extra_sd <- 0.01
+extra_sd <- 0.1
 extra <- rnorm(n, sd=extra_sd)
-b <- 3
+b <- 2
 y <- a + b * x + extra
 plot(x, y)
 ```
 
 a and b are unknown, x is known. None are considered "random"
 
-$\varepsilon$ is not known, need to estimate A, B, $\varepsilon$ using x
-and y
+$\varepsilon$ is not known, need to estimate A, B, $\varepsilon$ using x and y
 
 # Estimation of a, b and extra
 
 # Projection onto linear subspace
 
 "normal equations" -- "normal" in the linear algebra sense of orthogonal
+
+Let's move to the general case where we have more than one `x`
+
+```{r}
+x1 <- rnorm(n, sd=0.5)
+x2 <- rnorm(n, sd=0.5)
+x <- cbind(x1, x2)
+extra_sd <- 1
+extra <- rnorm(n, sd = extra_sd)
+a <- 3
+b <- c(2, 1)
+y <- a + x %*% b + extra
+# simpler, and equivalent:
+X <- cbind(rep(1,n), x1, x2)
+b <- c(3, 2, 1)
+y <- X %*% b + extra 
+```
+
+### Finding solution with calculus
+
+We want to find $\hat{\beta}$, $\hat{\sigma}^2$ that are optimal
+in some sense. One criterion is to minimize the squared distance from 
+observed $y$ to predicted $\hat{y}$.
+
+Total squared distance/error of prediction, also called the residual 
+sum of squares is:
+
+$$
+\begin{align}
+\hat{\varepsilon}' \hat{\varepsilon} &= (y-\hat{y})'(y-\hat{y}) \\
+&= (y-X \hat{\beta})'(y-X \hat{\beta}) \\
+&= y' y - 2 \hat{\beta}' X' y + \hat{\beta}' X' X \hat{\beta}
+\end{align}
+$$
+
+Taking derivatives with respect to $\hat{\beta}$ and set equal to 0
+
+$$
+0 = -2X'y + 2X'X \hat{\beta}
+$$
+
+This gives the "normal equations" (here shown with dimensions as subscripts)
+
+$$
+(X'X)_{p \times p} ~ \hat{\beta}_{p \times 1}=X'_{p \times n} ~y_{n \times 1} 
+$$
+
+$\hat{{\beta}}$ that solves the normal equations gives us 
+$\hat{y}$ and residuals $\hat{\varepsilon}$ such that
+
+$$
+\hat{y}' \hat{\varepsilon} = 0
+$$
+
+The predicted values and residuals are orthogonal (or "normal" to each other)
+
+### Geometric intuition of the normal equations
+
+We seek $\hat{\beta}$ such that $\hat{y} = X \hat{\beta}$ 
+is closest in Euclidean distance to $y$. 
+
+Instead of thinking about $n$ data points in $p$ dimensional space,
+we have to re-arrange our point of view to thinking about $y$ 
+and $\hat{y}$ in $n$ dimensional space.
+
+Think of $\hat{y} = X \hat{\beta}$ as
+an $n$-dimensional vector in the column space of $X$, 
+written $C(X)$. This is hard for us to visualize when 
+$n > 3$...
+
+$\hat{y}$, being a linear combination of columns of X,
+must live in $C(X)$. We want to find the point
+in $C(x)$ that is closest (minimizing the distance, 
+i.e. the squared residuals), to $y$. Another way
+to phrase this is that we want the residuals, 
+$y - \hat{y}$ to be perfectly orthogonal to $C(X)$.
+
+We can write this requirement as:
+
+$$
+\begin{align}
+X' (y - \hat{y}) &= \textbf{0} \\
+X' (y - X \hat{\beta}) &= \textbf{0} \\
+X' y - X' X \hat{\beta} &= \textbf{0} \\
+X' y &= X' X \hat{\beta}
+\end{align}
+$$
+
+which is what we also found via calculus.
 
 # Analysis of variance
 
@@ -81,4 +169,3 @@ What about when the space is big? Issues with estimation?
 What about when columns of X are correlated, how does this effect estimation of b
 
 What about wiggliness? Can we still use linear model?
-
