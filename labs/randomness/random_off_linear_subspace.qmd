@@ -133,14 +133,16 @@ The predicted values and residuals are orthogonal (or "normal" to each other)
 We seek $\hat{\beta}$ such that $\hat{y} = X \hat{\beta}$ 
 is closest in Euclidean distance to $y$. 
 
-Instead of thinking about $n$ data points in $p$ dimensional space,
-we have to re-arrange our point of view to thinking about $y$ 
-and $\hat{y}$ in $n$ dimensional space.
+We usually think about our data as $n$ data points 
+in $p + 1$ dimensional space (e.g. we plot $y$ over one column 
+of $X$, etc. Instead, for this intuition about the normal
+equations, we have to re-arrange our point of view to thinking 
+about $y$  and $\hat{y}$ in $n$ dimensional space. 
 
 Think of $\hat{y} = X \hat{\beta}$ as
 an $n$-dimensional vector in the column space of $X$, 
 written $C(X)$. This is hard for us to visualize when 
-$n > 3$...
+$n > 3$... 
 
 $\hat{y}$, being a linear combination of columns of X,
 must live in $C(X)$. We want to find the point
@@ -165,23 +167,32 @@ which is what we also found via calculus.
 ```{r}
 #| eval: false
 library(rgl)
-y <- c(-3,0,4)
-X <- cbind(c(1,0,.5),c(-1,1,0))
-P <- X %*% solve(t(X) %*% X) %*% t(X)
-yhat <- as.vector( P %*% y )
+y3d <- c(0,2,3)
+X3d <- cbind(c(3,0,2),c(2,-3,1))
+P <- X3d %*% solve(t(X3d) %*% X3d) %*% t(X3d)
+yhat3d <- as.vector( P %*% y3d )
 open3d()
 bg3d(color = "white")
-plot3d(y, type="n", 
-xlim=c(-5,5), ylim=c(-5,5), zlim=c(-5,5),
-xlab="", ylab="", zlab="")
+plot3d(
+  y3d,
+  xlim=c(-5,5), ylim=c(-5,5), zlim=c(-5,5),
+  xlab="", ylab="", zlab=""
+)
 axes3d(labels = NULL)
-normal <- pracma::cross(X[,1], X[,2])
-planes3d(a = normal[1], b = normal[2], c = normal[3], alpha = 0.5, col = "dodgerblue")
-points3d(y, col = "red", size = 10)
-points3d(yhat, col = "blue", size = 10)
-segments3d(rbind(y, yhat), col = "black", lwd = 2)
-text3d(y, texts = "y", pos = 3, col = "red")
-text3d(yhat, texts = "ŷ", pos = 3, col = "blue")
+normal <- pracma::cross(X3d[,1], X3d[,2])
+planes3d(
+  a = normal[1], b = normal[2], c = normal[3], 
+  alpha = 0.5, col = "dodgerblue"
+)
+segments3d(rbind(c(0,0,0), X3d[,1]), col = "dodgerblue", lwd = 2)
+segments3d(rbind(c(0,0,0), X3d[,2]), col = "dodgerblue", lwd = 2)
+points3d(y3d, col = "red", size = 10)
+points3d(yhat3d, col = "blue", size = 10)
+segments3d(rbind(y3d, yhat3d), col = "black", lwd = 2)
+text3d(y3d, texts = "y", pos = 3, col = "red")
+text3d(yhat3d, texts = "ŷ", pos = 3, col = "blue")
+text3d(X3d[,1], texts = "x1", pos = 3, col = "dodgerblue")
+text3d(X3d[,2], texts = "x2", pos = 3, col = "dodgerblue")
 ```
 
 # Analysis of variance
