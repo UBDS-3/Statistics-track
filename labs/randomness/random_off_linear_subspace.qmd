@@ -162,6 +162,28 @@ $$
 
 which is what we also found via calculus.
 
+```{r}
+#| eval: false
+library(rgl)
+y <- c(-3,0,4)
+X <- cbind(c(1,0,.5),c(-1,1,0))
+P <- X %*% solve(t(X) %*% X) %*% t(X)
+yhat <- as.vector( P %*% y )
+open3d()
+bg3d(color = "white")
+plot3d(y, type="n", 
+xlim=c(-5,5), ylim=c(-5,5), zlim=c(-5,5),
+xlab="", ylab="", zlab="")
+axes3d(labels = NULL)
+normal <- pracma::cross(X[,1], X[,2])
+planes3d(a = normal[1], b = normal[2], c = normal[3], alpha = 0.5, col = "dodgerblue")
+points3d(y, col = "red", size = 10)
+points3d(yhat, col = "blue", size = 10)
+segments3d(rbind(y, yhat), col = "black", lwd = 2)
+text3d(y, texts = "y", pos = 3, col = "red")
+text3d(yhat, texts = "ŷ", pos = 3, col = "blue")
+```
+
 # Analysis of variance
 
 What about when the space is big? Issues with estimation?
