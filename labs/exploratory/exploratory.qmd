@@ -20,3 +20,14 @@ params:
 #| echo: FALSE
 knitr::opts_chunk$set(echo = TRUE, fig.width=7, fig.height=5) 
 ```
+
+## Import data
+
+## Different data types
+
+## Wrangling data
+
+## Exploratory data analysis
+
+### Case study: chromatin accessibility
+

@@ -205,9 +205,5 @@ plot(n_values, var_of_vars, type="b", log="xy")
 points(n_values, 2 * true_sd^4 / (n_values - 1), type="b", col="blue")
 ```
 
-## Sources of "error"
-
-### Analysis of variance
-
-### Error is just residual variance
+## Bootstrap variance
 

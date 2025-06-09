@@ -23,9 +23,15 @@ knitr::opts_chunk$set(echo = TRUE, fig.width=7, fig.height=5)
 
 ## Introduction
 
-In this document, we'll explore when we have data which is spread randomly off of a linear subspace. In other words, this document covers the use case of linear regression/linear models, and *projection*, a concept from linear algebra.
+In this document, we'll explore when we have data which is spread 
+randomly around a linear relationship, e.g. in 2D a line or in 
+general around a "linear subspace". Often when we think of 
+linear regression, we imagine one `x` and one `y` variable,
+but in general a linear model implies using a linear combination
+of original predictor variables, or set of transformed predictor 
+variables, to account for variance in a response (`y`).
 
-## Randomness off a line
+## Random data around a line
 
 $$y = a + b x + \varepsilon$$
 
@@ -67,13 +73,10 @@ a and b are unknown, x is known. None are considered "random"
 
 $\varepsilon$ is not known, need to estimate A, B, $\varepsilon$ using x and y
 
-# Estimation of a, b and extra
+## Estimation of the linear coefficients and "extra"
 
-# Projection onto linear subspace
-
-"normal equations" -- "normal" in the linear algebra sense of orthogonal
-
-Let's move to the general case where we have more than one `x`
+Let's move to the general case where we have more than one `x`, 
+we will capitalize to represent the matrix `X`.
 
 ```{r}
 x1 <- rnorm(n, sd=0.5)
@@ -164,6 +167,8 @@ $$
 
 which is what we also found via calculus.
 
+### 3D interpretation of normal equations
+
 ```{r}
 #| eval: false
 library(rgl)
@@ -195,10 +200,21 @@ text3d(X3d[,1], texts = "x1", pos = 3, col = "dodgerblue")
 text3d(X3d[,2], texts = "x2", pos = 3, col = "dodgerblue")
 ```
 
-# Analysis of variance
+## Sampling variability of quantities
 
-What about when the space is big? Issues with estimation?
+### With uncorrelated predictors
 
-What about when columns of X are correlated, how does this effect estimation of b
+### With correlated predictors
 
-What about wiggliness? Can we still use linear model?
+### Variance of "extra": Analysis of Variance (ANOVA)
+
+## Effect of a missing predictor: bias
+
+## Effect modification looks like extra variance
+
+## What about wiggliness? 
+
+Can we still use linear model?
+
+## Bootstrap and permutation
+
