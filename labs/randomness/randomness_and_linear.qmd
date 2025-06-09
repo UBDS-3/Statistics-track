@@ -1,5 +1,5 @@
 ---
-title: "Randomness of data off linear subspaces"
+title: "Randomness and linear model"
 author: "Bio Data Science^3"
 date: "July 19 - August 2, 2025"
 format: 
