@@ -276,7 +276,53 @@ How does this look with uncorrelated predictors?
 If we have columns of $X$, say $x^1$ and $x^2$ with correlation of 0, then their off-diagonal elements of $(X' X)^{-1}$ will also be 0. Hence their corresponding estimated coefficients will not be correlated. The sampling variability of elements of $\hat{\beta}$ will depend mostly on $n$ and the variance of the corresponding column of $X$. In fact it is the product of these terms (using the biased variance estimate).
 
 ```{r}
-# show this across range of n
+set.seed(5)
+# define a function to get estimates of beta:
+simulate_estimating_betas <- \(n, nreps) {
+  x1 <- rep(0:1, each=n/2)
+  x2 <- rep(0:1, times=n/2)
+  X <- cbind(intercept=rep(1,n), x1, x2)
+  b <- c(3, 2, 1)
+  extra_sd <- 1
+  # precomputed objects:
+  X_times_b <- X %*% b
+  Xt_X_inv_Xt <- solve(t(X) %*% X) %*% t(X)
+  replicate(nreps, {
+    extra <- rnorm(n, sd = extra_sd)
+    y <- X_times_b + extra
+    b_hat <- Xt_X_inv_Xt %*% y
+    as.vector(b_hat)
+  })
+}
+```
+
+```{r}
+set.seed(5)
+n_values <- c(16, 40, 100, 500, 1000)
+nreps <- 1000
+est_betas <- lapply(
+  n_values,
+  simulate_estimating_betas,
+  nreps=nreps
+)
+```
+
+```{r}
+est_beta1 <- lapply(est_betas, \(b) b[2,])
+names(est_beta1) <- paste0("n=", n_values)
+boxplot(est_beta1)
+```
+
+```{r}
+(var_of_betas <- sapply(est_beta1, var))
+plot(n_values, var_of_betas, type="b", log="xy")
+# theoretical variance:
+points(n_values, 4/n_values, type="b", col="blue")
+```
+
+```{r}
+cor_beta1_beta2 <- sapply(est_betas, \(b) cor(t(b))[2,3])
+plot(cor_beta1_beta2, ylim=c(-1,1))
 ```
 
 How does this look with correlated predictors?
@@ -305,8 +351,7 @@ Does $X$ "explain" more variance in $y$ than we expect by change?
 
 Look at the ratio of explained variance
 
-Show that this is always increasing, hence we need to use tests 
-(t-test for one at a time, F-test in general)
+Show that this is always increasing, hence we need to use tests (t-test for one at a time, F-test in general)
 
 ## Effect of a missing predictor: bias
 
@@ -328,4 +373,4 @@ polynomial, orthogonal, splines package
 
 Bootstrap to estimate the variance of epsilon
 
-Permute to test beta = 0 
+Permute to test beta = 0
