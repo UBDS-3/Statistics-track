@@ -23,19 +23,29 @@ knitr::opts_chunk$set(echo = TRUE, fig.width=7, fig.height=5)
 
 ## Introduction
 
-In this document, we'll explore when we have data which is spread 
-randomly around a linear relationship, e.g. in 2D a line or in 
-general around a "linear subspace". Often when we think of 
-linear regression, we imagine one `x` and one `y` variable,
-but in general a linear model implies using a linear combination
-of original predictor variables, or set of transformed predictor 
-variables, to account for variance in a response (`y`).
+In this document, we'll explore when we have data which is spread randomly around a linear relationship, e.g. in 2D a line or in general around a "linear subspace". Often when we think of linear regression, we imagine one `x` and one `y` variable, but in general a linear model implies using a linear combination of original predictor variables, or set of transformed predictor variables, to account for variance in a response (`y`).
 
 ## Random data around a line
 
 $$y = a + b x + \varepsilon$$
 
-$\varepsilon$ is "extra"
+the above type of notation will be shorthand in this lecture for write that for all $i \in 1, \dots, n$:
+
+$$
+y_i = a + b x_i + \varepsilon_i
+$$
+
+$\varepsilon$ is "extra" beyond the linear relationship. You can hear it referred to as "error" or "epsilon" (the Greek name for the symbol we use).
+
+We will assume $E(\varepsilon) = 0$ , $\textrm{Var}(\varepsilon_i) = \sigma^2$ for all $i$, and $\textrm{Cov}(\varepsilon_i, \varepsilon_j) = 0$ for all $i,j$. We don't need distributional assumptions just yet. We will see we get a lot of useful properties from fitted linear models with just these three assumptions.
+
+Note that the first assumption also implies $E(y) = a + b x$, that the conditional mean of $y$ is linear with $x$.
+
+::: {.callout-note collapse="false"}
+## Question
+
+What does it mean here "extra"? Is it "error", "noise", something else?
+:::
 
 ```{r}
 set.seed(5)
@@ -69,38 +79,56 @@ y <- a + b * x + extra
 plot(x, y)
 ```
 
-a and b are unknown, x is known. None are considered "random"
+::: {.callout-note collapse="false"}
+## Question
 
-$\varepsilon$ is not known, need to estimate A, B, $\varepsilon$ using x and y
+a and b are unknown, x is known. But they are considered "fixed" in the world of our model. None are considered "random". What are the implications of these assumptions?
+:::
+
+$\varepsilon$ is also not known, need to estimate a, b, $\varepsilon$ using x and y
 
 ## Estimation of the linear coefficients and "extra"
 
-Let's move to the general case where we have more than one `x`, 
-we will capitalize to represent the matrix `X`.
+Let's move to the general case where we have more than one $x$, we will capitalize to represent the matrix $X$ and change to using `X` in the code. We can use `X %*% b` with matrix `X` and vector `b` to accomplish a linear combinations of the component columns $x^1$ and $x^2$ of $X$.
+
+We will also switch by convention to referring to the vector in code `b` as a vector variable $\beta$, and estimates of b to a random vector $\hat{\beta}$.
+
+::: {.callout-note collapse="false"}
+## Question
+
+Why is $\hat{\beta}$ random, if we said $\beta$ is fixed?
+:::
 
 ```{r}
 x1 <- rnorm(n, sd=0.5)
 x2 <- rnorm(n, sd=0.5)
-x <- cbind(x1, x2)
+X <- cbind(x1, x2)
 extra_sd <- 1
 extra <- rnorm(n, sd = extra_sd)
 a <- 3
 b <- c(2, 1)
-y <- a + x %*% b + extra
+y <- a + X %*% b + extra
 # simpler, and equivalent:
-X <- cbind(rep(1,n), x1, x2)
+X <- cbind(intercept=rep(1,n), x1, x2)
 b <- c(3, 2, 1)
 y <- X %*% b + extra 
 ```
 
+We will use $p$ to denote the number of columns of $X$. Sometimes you will see $p + 1$ for the number of columns of $X$ if the coefficients are counted from $\beta_0, \beta_1, \dots, \beta_p$ with $\beta_0$ as the intercept (e.g. `a` above).
+
+We can show that for linear models with an intercept, there are a number of properties, such as the property that the residuals (predictions minus observed outcomes) will sum to 0. For models where the $x$'s are "dummy variables" (indicator variables taking values $\{0,1\}$) we will have $\hat{\beta}_0 = 1/n_0 \sum_{i:x_i = 0} y_i$ , that is, the estimated coefficient will be equal to the mean value of the observed outcome when the predictors are all equal to 0. If there's no data point where allx_i=0, the intercept becomes an extrapolation to a fitted value where $x_i = 0$, not a literal average of data.
+
 ### Finding solution with calculus
 
-We want to find $\hat{\beta}$, $\hat{\sigma}^2$ that are optimal
-in some sense. One criterion is to minimize the squared distance from 
-observed $y$ to predicted $\hat{y}$.
+We want to find $\hat{\beta}$, $\hat{\sigma}^2$ that are optimal in some sense. One criterion is to minimize the squared differences from observed $y$ to predicted $\hat{y}$ ("least squares" or sometimes "ordinary least squares", OLS). We compute per observation "residuals", $\hat{\varepsilon}_i = \hat{y}_i - y_i$. Below I will write $\hat{\varepsilon}$ as the vector of residuals for all $n$ observations.
 
-Total squared distance/error of prediction, also called the residual 
-sum of squares is:
+::: {.callout-note collapse="false"}
+## Question
+
+Why consider square of the residuals? What are squares good for in calculus, and what do they correspond to in geometry? Why is this a good idea, and why maybe a bad idea?
+:::
+
+Total squared distance/error of prediction, also called the residual sum of squares, can be computed and simplified into terms involving $\hat{\beta}$:
 
 $$
 \begin{align}
@@ -110,7 +138,7 @@ $$
 \end{align}
 $$
 
-Taking derivatives with respect to $\hat{\beta}$ and set equal to 0
+Taking derivatives with respect to $\hat{\beta}$ and setting equal to 0
 
 $$
 0 = -2X'y + 2X'X \hat{\beta}
@@ -122,37 +150,29 @@ $$
 (X'X)_{p \times p} ~ \hat{\beta}_{p \times 1}=X'_{p \times n} ~y_{n \times 1} 
 $$
 
-$\hat{{\beta}}$ that solves the normal equations gives us 
-$\hat{y}$ and residuals $\hat{\varepsilon}$ such that
+$\hat{{\beta}}$ that solves the normal equations gives us $\hat{y} = X \hat{{\beta}}$ and residuals $\hat{\varepsilon}$ such that
 
 $$
 \hat{y}' \hat{\varepsilon} = 0
 $$
 
-The predicted values and residuals are orthogonal (or "normal" to each other)
+The predicted values and residuals are orthogonal. We will investigate this further in the next section.
+
+::: {.callout-note collapse="false"}
+## Question
+
+Does this make sense? What if the predicted values and residuals were correlated? E.g. imagine whenever predicted $\hat{y}$ is positive, the residual is positive, and whenever predicted $\hat{y}$ is negative the residual is negative.
+:::
 
 ### Geometric intuition of the normal equations
 
-We seek $\hat{\beta}$ such that $\hat{y} = X \hat{\beta}$ 
-is closest in Euclidean distance to $y$. 
+We seek $\hat{\beta}$ such that $\hat{y} = X \hat{\beta}$ is closest in Euclidean distance to $y$ (least squares).
 
-We usually think about our data as $n$ data points 
-in $p + 1$ dimensional space (e.g. we plot $y$ over one column 
-of $X$, etc. Instead, for this intuition about the normal
-equations, we have to re-arrange our point of view to thinking 
-about $y$  and $\hat{y}$ in $n$ dimensional space. 
+We usually think about our data as $n$ data points in $p$ dimensional space e.g. we plot $y$ over one column of $X$, etc. Instead, for this intuition about the normal equations, we have to re-arrange our point of view to thinking about $y$ and $\hat{y}$ in $n$ dimensional space.
 
-Think of $\hat{y} = X \hat{\beta}$ as
-an $n$-dimensional vector in the column space of $X$, 
-written $C(X)$. This is hard for us to visualize when 
-$n > 3$... 
+Think of $\hat{y} = X \hat{\beta}$ as an $n$-dimensional vector in the column space of $X$, written $C(X)$. This is hard for us to visualize when $n > 3$...
 
-$\hat{y}$, being a linear combination of columns of X,
-must live in $C(X)$. We want to find the point
-in $C(x)$ that is closest (minimizing the distance, 
-i.e. the squared residuals), to $y$. Another way
-to phrase this is that we want the residuals, 
-$y - \hat{y}$ to be perfectly orthogonal to $C(X)$.
+$\hat{y}$, being a linear combination of columns of X, must live in $C(X)$. We want to find the point in $C(x)$ that is closest (minimizing the distance, i.e. the squared residuals), to $y$. Another way to phrase this is that we want the residuals, $\hat{\varepsilon} = y - \hat{y}$ to be perfectly orthogonal to $C(X)$.
 
 We can write this requirement as:
 
@@ -165,7 +185,23 @@ X' y &= X' X \hat{\beta}
 \end{align}
 $$
 
-which is what we also found via calculus.
+which is the same system of linear equations we also found via calculus.
+
+The matrix that projects $y$ to $\hat{y}$ in $C(X)$ is called $P$, the projection matrix.
+
+Looking at the above, we can recognize that the projection matrix is defined by
+
+$$
+P = X (X' X)^{-1} X'
+$$
+
+which is perhaps familiar from linear algebra as the matrix which projects any vector $v$ onto the linear subspace spanned by the columns of $X$.
+
+::: {.callout-note collapse="false"}
+## Question
+
+In fact the residuals $\hat{\varepsilon}$ are orthogonal to the column space of $X$, $C(X)$. Does this make sense? What if residuals were correlated with one of the columns of $X$?
+:::
 
 ### 3D interpretation of normal equations
 
@@ -200,21 +236,59 @@ text3d(X3d[,1], texts = "x1", pos = 3, col = "dodgerblue")
 text3d(X3d[,2], texts = "x2", pos = 3, col = "dodgerblue")
 ```
 
-## Sampling variability of quantities
+## Estimating the variance of "extra"
+
+We will estimate the variance of the "extra" part of our data, $\textrm{Var}(\varepsilon_i) = \sigma^2$, with $\hat{\sigma}^2 = \frac{1}{(n-p)} \sum_i^{n} \hat{\varepsilon}_i$. The $n-p$ is familiar from the typical estimate of the sample variance, which takes into the "degree of freedom" that was used in estimating the mean.
+
+::: {.callout-note collapse="false"}
+## Question
+
+It can be shown that $\textrm{Var}(\hat{\varepsilon}_i) = \sigma^2 (1 - h_i)$ with $h_i$ called the "hat value", equal to the diagonal of the projection matrix $P$. This is not constant across observations $i$. Does this make intuitive sense, that while the $\varepsilon$ are assumed constant variance, the residuals are not? Note also that residuals are not independent while $\varepsilon$ are.
+:::
+
+## Properties of the OLS solution
+
+The following are useful properties of our OLS solution $\hat{\beta}$:
+
+-   It is unbiased, that is $E(\hat{\beta}) = \beta$.
+
+-   It is "efficient", meaning it has the smallest variance of all unbiased estimators that are linear functions of the data. This is a result of the Gauss-Markov theorem, which has a good Wikipedia page with a proof of this result that you can consult. Briefly the steps are:
+
+    1.  Take expectation of a linear estimator, and use unbiased property.
+    2.  Take variance of a linear estimator using result from (1)
+
+    If we add that $\varepsilon_i \sim N(0, \sigma^2)$ then we have that the OLS solution is the most efficient of *all* unbiased estimators.
+
+-   The sampling distribution of $\hat{\beta}$ is approximately multivariate normal, with approximation better with large samples. With $\varepsilon_i \sim N(0, \sigma^2)$ then the sampling distribution is exactly multivariate normal.
+
+-   If we add $\varepsilon_i \sim N(0, \sigma^2)$ then we can construct small-sample tests with the correct distribution (our statistics of interest will follow Student's $t$ distribution).
+
+## Sampling variability of the OLS estimate
+
+We can derive the sampling covariance:
+
+$$
+\textrm{Cov}(\hat{\beta}) = \sigma^2 (X' X)^{-1}
+$$
 
 ### With uncorrelated predictors
 
+If we have columns of $X$, say $x^1$ and $x^2$ with correlation of 0, then their off-diagonal elements of $(X' X)^{-1}$ will also be 0. Hence their corresponding estimated coefficients will not be correlated. The sampling variability of elements of $\hat{\beta}$ will depend mostly on $n$ and the variance of the corresponding column of $X$. In fact it is the product of these terms (using the biased variance estimate).
+
+```{r}
+# show this
+```
+
 ### With correlated predictors
 
-### Variance of "extra": Analysis of Variance (ANOVA)
+### Analysis of Variance (ANOVA)
 
 ## Effect of a missing predictor: bias
 
 ## Effect modification looks like extra variance
 
-## What about wiggliness? 
+## What about wiggliness?
 
-Can we still use linear model?
+Can we still use linear model? Yes!
 
 ## Bootstrap and permutation
-
