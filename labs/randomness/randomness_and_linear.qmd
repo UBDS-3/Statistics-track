@@ -172,7 +172,7 @@ We usually think about our data as $n$ data points in $p$ dimensional space e.g.
 
 Think of $\hat{y} = X \hat{\beta}$ as an $n$-dimensional vector in the column space of $X$, written $C(X)$. This is hard for us to visualize when $n > 3$...
 
-$\hat{y}$, being a linear combination of columns of X, must live in $C(X)$. We want to find the point in $C(x)$ that is closest (minimizing the distance, i.e. the squared residuals), to $y$. Another way to phrase this is that we want the residuals, $\hat{\varepsilon} = y - \hat{y}$ to be perfectly orthogonal to $C(X)$.
+$\hat{y}$, being a linear combination of columns of X, must live in $C(X)$. We want to find the point in $C(x)$ that is closest (minimizing the distance, i.e. the squared residuals), to $y$. Another way to phrase this is that we want the residuals, $\hat{\varepsilon} = y - \hat{y}$ to be orthogonal to $C(X)$.
 
 We can write this requirement as:
 
@@ -271,24 +271,61 @@ $$
 \textrm{Cov}(\hat{\beta}) = \sigma^2 (X' X)^{-1}
 $$
 
-### With uncorrelated predictors
+How does this look with uncorrelated predictors?
 
 If we have columns of $X$, say $x^1$ and $x^2$ with correlation of 0, then their off-diagonal elements of $(X' X)^{-1}$ will also be 0. Hence their corresponding estimated coefficients will not be correlated. The sampling variability of elements of $\hat{\beta}$ will depend mostly on $n$ and the variance of the corresponding column of $X$. In fact it is the product of these terms (using the biased variance estimate).
 
 ```{r}
-# show this
+# show this across range of n
 ```
 
-### With correlated predictors
+How does this look with correlated predictors?
 
-### Analysis of Variance (ANOVA)
+```{r}
+library(mvtnorm)
+n <- 100
+rho <- 0.5
+X <- rmvnorm(n, 
+  mean = c(0,0),
+  sigma = cbind(c(1,rho),c(rho,1))
+)
+
+# show this across range of rho, but record actual rho of X which is what matters
+```
+
+::: {.callout-note collapse="false"}
+## Question
+
+What do these two results tell us about design of experiments and power to detect variance explained in $y$ by columns of $X$?
+:::
+
+## Analysis of Variance (ANOVA)
+
+Does $X$ "explain" more variance in $y$ than we expect by change?
+
+Look at the ratio of explained variance
+
+Show that this is always increasing, hence we need to use tests 
+(t-test for one at a time, F-test in general)
 
 ## Effect of a missing predictor: bias
 
+Show a sim, give the result
+
 ## Effect modification looks like extra variance
+
+Simulate beta conditional on some value of an X variable
+
+ATE, ATT, etc. link to Hernan book
 
 ## What about wiggliness?
 
 Can we still use linear model? Yes!
 
+polynomial, orthogonal, splines package
+
 ## Bootstrap and permutation
+
+Bootstrap to estimate the variance of epsilon
+
+Permute to test beta = 0 
