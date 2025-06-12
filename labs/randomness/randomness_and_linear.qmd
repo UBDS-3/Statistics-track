@@ -35,9 +35,9 @@ $$
 y_i = a + b x_i + \varepsilon_i
 $$
 
-$\varepsilon$ is "extra" beyond the linear relationship. You can hear it referred to as "error" or "epsilon" (the Greek name for the symbol we use).
+$\varepsilon_i$ is "extra" beyond the linear relationship. You can hear it referred to as "error" or "epsilon" (the Greek name for the symbol we use).
 
-We will assume $E(\varepsilon) = 0$ , $\textrm{Var}(\varepsilon_i) = \sigma^2$ for all $i$, and $\textrm{Cov}(\varepsilon_i, \varepsilon_j) = 0$ for all $i,j$. We don't need distributional assumptions just yet. We will see we get a lot of useful properties from fitted linear models with just these three assumptions.
+We will assume $E(\varepsilon_i) = 0$ , $\textrm{Var}(\varepsilon_i) = \sigma^2$ for all $i$, and $\textrm{Cov}(\varepsilon_i, \varepsilon_j) = 0$ for all $i,j$. We don't need distributional assumptions just yet. We will see we get a lot of useful properties from fitted linear models with just these three assumptions.
 
 Note that the first assumption also implies $E(y) = a + b x$, that the conditional mean of $y$ is linear with $x$.
 
@@ -116,7 +116,7 @@ y <- X %*% b + extra
 
 We will use $p$ to denote the number of columns of $X$. Sometimes you will see $p + 1$ for the number of columns of $X$ if the coefficients are counted from $\beta_0, \beta_1, \dots, \beta_p$ with $\beta_0$ as the intercept (e.g. `a` above).
 
-We can show that for linear models with an intercept, there are a number of properties, such as the property that the residuals (predictions minus observed outcomes) will sum to 0. For models where the $x$'s are "dummy variables" (indicator variables taking values $\{0,1\}$) we will have $\hat{\beta}_0 = 1/n_0 \sum_{i:x_i = 0} y_i$ , that is, the estimated coefficient will be equal to the mean value of the observed outcome when the predictors are all equal to 0. If there's no data point where allx_i=0, the intercept becomes an extrapolation to a fitted value where $x_i = 0$, not a literal average of data.
+We can show that for linear models with an intercept, there are a number of properties, such as the property that the residuals (predictions minus observed outcomes) will sum to 0. For models where the $x$'s are "dummy variables" (indicator variables taking values $\{0,1\}$) we will have $\hat{\beta}_0 = 1/n_0 \sum_{i:x_i = 0} y_i$ , that is, the estimated coefficient will be equal to the mean value of the observed outcome when the predictors are all equal to 0. If there's no data point where all $x_i=0$, the intercept becomes an extrapolation to a fitted value where $x_i = 0$, not a literal average of data.
 
 ### Finding solution with calculus
 
@@ -128,7 +128,7 @@ We want to find $\hat{\beta}$, $\hat{\sigma}^2$ that are optimal in some sense. 
 Why consider square of the residuals? What are squares good for in calculus, and what do they correspond to in geometry? Why is this a good idea, and why maybe a bad idea?
 :::
 
-Total squared distance/error of prediction, also called the residual sum of squares, can be computed and simplified into terms involving $\hat{\beta}$:
+Total squared distance/error of prediction, also called the residual sum of squares, can be computed and simplified into terms involving $\hat{\beta}$. Note here we refer to *vectors* $\varepsilon, y, \hat{y}, \hat{\beta}$ and matrix $X$.
 
 $$
 \begin{align}
@@ -138,7 +138,7 @@ $$
 \end{align}
 $$
 
-Taking derivatives with respect to $\hat{\beta}$ and setting equal to 0
+Taking derivatives with respect to (vector) $\hat{\beta}$ and setting equal to 0
 
 $$
 0 = -2X'y + 2X'X \hat{\beta}
@@ -172,7 +172,7 @@ We usually think about our data as $n$ data points in $p$ dimensional space e.g.
 
 Think of $\hat{y} = X \hat{\beta}$ as an $n$-dimensional vector in the column space of $X$, written $C(X)$. This is hard for us to visualize when $n > 3$...
 
-$\hat{y}$, being a linear combination of columns of X, must live in $C(X)$. We want to find the point in $C(x)$ that is closest (minimizing the distance, i.e. the squared residuals), to $y$. Another way to phrase this is that we want the residuals, $\hat{\varepsilon} = y - \hat{y}$ to be orthogonal to $C(X)$.
+$\hat{y}$, being a linear combination of columns of X, must live in $C(X)$. We want to find the point in $C(x)$ that is closest (minimizing the distance, i.e. the squared residuals), to $y$. Another way to phrase this is that we want the residual vector, $\hat{\varepsilon} = y - \hat{y}$ to be orthogonal to $C(X)$.
 
 We can write this requirement as:
 
@@ -243,7 +243,7 @@ We will estimate the variance of the "extra" part of our data, $\textrm{Var}(\va
 ::: {.callout-note collapse="false"}
 ## Question
 
-It can be shown that $\textrm{Var}(\hat{\varepsilon}_i) = \sigma^2 (1 - h_i)$ with $h_i$ called the "hat value", equal to the diagonal of the projection matrix $P$. This is not constant across observations $i$. Does this make intuitive sense, that while the $\varepsilon$ are assumed constant variance, the residuals are not? Note also that residuals are not independent while $\varepsilon$ are.
+It can be shown that $\textrm{Var}(\hat{\varepsilon}_i) = \sigma^2 (1 - h_i)$ with $h_i$ called the "hat value", equal to the i-th diagonal of the projection matrix $P$. This is not constant across observations $i$. Does this make intuitive sense, that while the $\varepsilon$ are assumed constant variance, the residuals are not? Note also that residuals are not independent while $\varepsilon$ are.
 :::
 
 ## Properties of the OLS solution
@@ -257,15 +257,15 @@ The following are useful properties of our OLS solution $\hat{\beta}$:
     1.  Take expectation of a linear estimator, and use unbiased property.
     2.  Take variance of a linear estimator using result from (1)
 
-    If we add that $\varepsilon_i \sim N(0, \sigma^2)$ then we have that the OLS solution is the most efficient of *all* unbiased estimators.
+    If we add the assumption that $\varepsilon_i \sim N(0, \sigma^2)$ then we have that the OLS solution is the most efficient of *all* unbiased estimators.
 
 -   The sampling distribution of $\hat{\beta}$ is approximately multivariate normal, with approximation better with large samples. With $\varepsilon_i \sim N(0, \sigma^2)$ then the sampling distribution is exactly multivariate normal.
 
--   If we add $\varepsilon_i \sim N(0, \sigma^2)$ then we can construct small-sample tests with the correct distribution (our statistics of interest will follow Student's $t$ distribution).
+-   If we add the assumption $\varepsilon_i \sim N(0, \sigma^2)$ then we can construct small-sample tests with the correct distribution (our statistics of interest will follow Student's $t$ distribution).
 
 ## Sampling variability of the OLS estimate
 
-We can derive the sampling covariance:
+We can derive the sample covariance matrix for $\hat{\beta}$:
 
 $$
 \textrm{Cov}(\hat{\beta}) = \sigma^2 (X' X)^{-1}
