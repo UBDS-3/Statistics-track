@@ -329,14 +329,60 @@ How does this look with correlated predictors?
 
 ```{r}
 library(mvtnorm)
-n <- 100
-rho <- 0.5
-X <- rmvnorm(n, 
-  mean = c(0,0),
-  sigma = cbind(c(1,rho),c(rho,1))
-)
+simulate_estimating_betas_corX <- \(rho, nreps, n = 100) {
+  replicate(nreps, {
+    X <- rmvnorm(n, 
+      mean = c(0,0),
+      sigma = cbind(c(1,rho),c(rho,1))
+    )
+    b <- c(2, 1)
+    extra_sd <- 1
+    X_times_b <- X %*% b
+    Xt_X_inv <- solve(t(X) %*% X)
+    extra <- rnorm(n, sd = extra_sd)
+    y <- X_times_b + extra
+    b_hat <- Xt_X_inv %*% t(X) %*% y
+    c(cor(X)[1,2], as.vector(b_hat), Xt_X_inv[1,])
+  })
+}
+```
 
-# show this across range of rho, but record actual rho of X which is what matters
+```{r}
+set.seed(5)
+rho_values <- c(0, .25, .5, .75, .95, .99)
+nreps <- 1000
+est_cor_and_betas <- lapply(
+  rho_values,
+  simulate_estimating_betas_corX,
+  nreps=nreps
+)
+```
+
+```{r}
+sample_cor <- lapply(est_cor_and_betas, \(x) x[1,])
+names(sample_cor) <- paste0("r=", rho_values)
+boxplot(sample_cor)
+abline(h=rho_values, col=rgb(0,0,0,.3))
+```
+
+```{r}
+est_beta1 <- lapply(est_cor_and_betas, \(x) x[2,])
+names(est_beta1) <- paste0("r=", rho_values)
+boxplot(est_beta1)
+```
+
+```{r}
+var_beta1 <- sapply(est_cor_and_betas, \(x) var(x[2,]))
+XtXinv_11 <- sapply(est_cor_and_betas, \(x) mean(x[4,]))
+plot(rho_values, var_beta1)
+points(rho_values, XtXinv_11, col="blue")
+```
+
+```{r}
+cor_beta1_beta2 <- sapply(est_cor_and_betas, \(x) cor(t(x))[2,3])
+XtXinv_12 <- sapply(est_cor_and_betas, \(x) mean(x[5,]))
+plot(rho_values, cor_beta1_beta2)
+points(rho_values, XtXinv_12 / XtXinv_11, col="blue")
 ```
 
 ::: {.callout-note collapse="false"}
