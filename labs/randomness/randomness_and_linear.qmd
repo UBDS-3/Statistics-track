@@ -1,5 +1,5 @@
 ---
-title: "Randomness and linear model"
+title: "Randomness and the linear model"
 author: "Bio Data Science^3"
 date: "July 19 - August 2, 2025"
 format: 
@@ -23,7 +23,7 @@ knitr::opts_chunk$set(echo = TRUE, fig.width=7, fig.height=5)
 
 ## Introduction
 
-In this document, we'll explore when we have data which is spread randomly around a linear relationship, e.g. in 2D a line or in general around a "linear subspace". Often when we think of linear regression, we imagine one `x` and one `y` variable, but in general a linear model implies using a linear combination of original predictor variables, or set of transformed predictor variables, to account for variance in a response (`y`).
+In this document, we'll explore when we have data which is spread randomly around a linear relationship, e.g. pairs $x_i, y_i$ in 2D where the $y_i$ are scattered around a line. Often when we think of linear regression, we imagine one $x$ and one $y$ variable (here writing them as vectors), but in general a linear model implies using a linear combination of original predictor variables $(x^1, x^2, \dots, x^p)$ or set of transformed predictor variables, to account for variance in a response $y$. We can say then that $y$ falls near a "linear subspace" that may be spanned by a number of vectors $x$. We can refer to the $x$ vectors as predictors, covariates, or features, and the $y$ may be called called the outcome, the observations, or the target, depending on context and field.
 
 ## Random data around a line
 
@@ -35,7 +35,7 @@ $$
 y_i = a + b x_i + \varepsilon_i
 $$
 
-$\varepsilon_i$ is "extra" beyond the linear relationship. You can hear it referred to as "error" or "epsilon" (the Greek name for the symbol we use).
+$\varepsilon_i$ is "extra" beyond the linear relationship. You can hear it referred to as "error" or "epsilon" (the Greek name for the symbol we use). Note that, since we don't know $a$ or $b$ we don't "observe" $\varepsilon_i$ but will have to estimate it.
 
 We will assume $E(\varepsilon_i) = 0$ , $\textrm{Var}(\varepsilon_i) = \sigma^2$ for all $i$, and $\textrm{Cov}(\varepsilon_i, \varepsilon_j) = 0$ for all $i,j$. We don't need distributional assumptions just yet. We will see we get a lot of useful properties from fitted linear models with just these three assumptions.
 
@@ -394,17 +394,28 @@ What do these two results tell us about design of experiments and power to detec
 
 ## Analysis of Variance (ANOVA)
 
-Does $X$ "explain" more variance in $y$ than we expect by change?
+Does $X$ "explain" more variance in $y$ than we expect by chance?
 
-Look at the ratio of explained variance
+We can look at the increase in the sample variance in $\hat{y}$ compared to the sample variance of $y$. The ratio of these variances is called $R^2$ and is often used to evaluate how well a model explains the data.
 
-Show that this is always increasing, hence we need to use tests (t-test for one at a time, F-test in general)
+One caution is that $R^2$ is always increasing with additional columns of $X$. To get around this concern, we can either:
 
-## Effect of a missing predictor: bias
+-   Use a test set to evaluate $R^2$ to know if our model generalizes well
+-   Perform statistical tests which take into account how many columns of $X$ we used to explain variance in $y$.
+
+The latter option is usually performed via t-test for one column of $X$ at a time, or F-test in general.
+
+## Extra variance
+
+When we look at the residuals, really this is just extra variance. It's misleading to call it "error" or "noise" although these are the common ways to refer to $\hat{\varepsilon}_i$.
+
+Let's consider two types of sources of extra variance that are truly not "error" or "noise".
+
+### 1. Effect of a missing predictor
 
 Show a sim, give the result
 
-## Effect modification looks like extra variance
+### 2. Conditional effects
 
 Simulate beta conditional on some value of an X variable
 
@@ -414,10 +425,35 @@ ATE, ATT, etc. link to Hernan book
 
 Can we still use linear model? Yes!
 
-polynomial, orthogonal, splines package
+There are a number of choices in R. You can specify polynomials (ideally with an orthogonal basis), or semi-parametric smooth curves using the splines package. Luckily, there are basis vectors which allow us to fit smoothing splines using the same linear model solution (OLS) described above. The same analysis of variance can be used.
 
-## Bootstrap and permutation
+## Bootstrap to estimate variability of estimates
 
-Bootstrap to estimate the variance of epsilon
+Besides our formula above for estimating sampling variability of various quantities, which all relied on $\hat{\sigma}^2$, we can also use bootstrapping to estimate variances. Let's show an example where one of the assumptions is not true, and compare the standard estimators to bootstrap estimators.
 
-Permute to test beta = 0
+```{r}
+n <- 50
+x1 <- rnorm(n, sd=0.5)
+x2 <- rnorm(n, sd=0.5)
+X <- cbind(intercept=rep(1,n), x1, x2)
+b <- c(5, 2, 2)
+y_linear <- X %*% b
+extra <- rnorm(n, sd = y_linear/5) # varies with the linear part of y
+y <- y_linear + extra 
+plot(y_linear, y, cex=.5)
+```
+
+Bootstrapping Regression Models in R
+
+BCa bootstrap
+
+```{r}
+library(car)
+fit <- lm(y ~ 1 + x1 + x2)
+summary(fit)$coef
+set.seed(5)
+bfit <- Boot(fit, method="residual")
+summary(bfit)
+confint(fit)
+Confint(bfit)[,-1]
+```
