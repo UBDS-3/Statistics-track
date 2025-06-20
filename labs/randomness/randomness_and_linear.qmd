@@ -331,7 +331,7 @@ How does this look with correlated predictors?
 library(mvtnorm)
 simulate_estimating_betas_corX <- \(rho, nreps, n = 100) {
   replicate(nreps, {
-    X <- rmvnorm(n, 
+    X <- mvtnorm::rmvnorm(n, 
       mean = c(0,0),
       sigma = cbind(c(1,rho),c(rho,1))
     )
@@ -407,13 +407,70 @@ The latter option is usually performed via t-test for one column of $X$ at a tim
 
 ## Extra variance
 
-When we look at the residuals, really this is just extra variance. It's misleading to call it "error" or "noise" although these are the common ways to refer to $\hat{\varepsilon}_i$.
+When we look at the residuals, really this is just extra variance. It's misleading to call it "error" or "noise" although these are the common ways to refer to $\hat{\varepsilon}_i$. Let's consider two cases where the sources of extra variance are not well described as "error" or "noise".
 
-Let's consider two types of sources of extra variance that are truly not "error" or "noise".
+We will switch from here on from the manual matrix computation of estimates to using R's built in linear model function `lm()`. We will use the *broom* package to show summary statistics from the linear model.
+
+```{r}
+set.seed(5)
+n <- 100
+x1 <- rnorm(n, sd=0.5)
+x2 <- rnorm(n, sd=0.5)
+X <- cbind(intercept=rep(1,n), x1, x2)
+b <- c(5, 2, 2)
+extra_sd <- 1
+extra <- rnorm(n, sd=extra_sd)
+y <- X %*% b + extra 
+fit <- lm(y ~ 1 + x1 + x2)
+library(broom)
+tidy(fit) # the (X'X)-1 X'y estimates and s.e.
+glance(fit) # more statistics
+```
 
 ### 1. Effect of a missing predictor
 
-Show a sim, give the result
+A simple one, what if we leave out a predictor?
+
+```{r}
+fit_mis <- lm(y ~ 1 + x1)
+tidy(fit_mis) 
+glance(fit_mis)["sigma"]
+```
+
+::: {.callout-note collapse="false"}
+## Question
+
+Why did the standard errors increase for the intercept and x1 coefficient? Do you think they are biased?
+:::
+
+Let's do another case where x1 and x2 are correlated.
+
+```{r}
+rho <- .7
+X0 <- mvtnorm::rmvnorm(
+  n, mean = c(0,0), 
+  sigma = cbind(c(1,rho),c(rho,1))
+)
+x1 <- X0[,1]
+x2 <- X0[,2]
+X <- cbind(intercept=rep(1,n), x1, x2)
+b <- c(5, 2, 2)
+extra_sd <- 1
+extra <- rnorm(n, sd = extra_sd)
+y <- X %*% b + extra
+```
+
+The second one is a mis-specified model. Note how far the true value is from the confidence interval!
+
+```{r}
+fit <- lm(y ~ 1 + x1 + x2)
+tidy(fit)
+fit_mis <- lm(y ~ 1 + x1)
+tidy(fit_mis)
+confint(fit_mis)
+```
+
+One can derive that this second estimator for the slope associated with $x^1$, $\hat{\beta}_1^{mis}$, will be biased by the amount $\rho \beta_2$. So the higher the correlation and the larger the true effect of $\beta_2$, the worse the bias will be.
 
 ### 2. Conditional effects
 
@@ -429,18 +486,17 @@ There are a number of choices in R. You can specify polynomials (ideally with an
 
 ## Bootstrap to estimate variability of estimates
 
-Besides our formula above for estimating sampling variability of various quantities, which all relied on $\hat{\sigma}^2$, we can also use bootstrapping to estimate variances. Let's show an example where one of the assumptions is not true, and compare the standard estimators to bootstrap estimators.
+Besides our formula above for estimating sampling variability of various quantities, which all relied on $\hat{\sigma}^2$, we can also use bootstrapping to estimate variances. Let's show an example, and compare the standard estimators to bootstrap estimators.
 
 ```{r}
-n <- 50
+set.seed(5)
+n <- 100
 x1 <- rnorm(n, sd=0.5)
 x2 <- rnorm(n, sd=0.5)
 X <- cbind(intercept=rep(1,n), x1, x2)
 b <- c(5, 2, 2)
-y_linear <- X %*% b
-extra <- rnorm(n, sd = y_linear/5) # varies with the linear part of y
-y <- y_linear + extra 
-plot(y_linear, y, cex=.5)
+extra <- rt(n, df=2)
+y <- X %*% b + extra 
 ```
 
 Bootstrapping Regression Models in R
