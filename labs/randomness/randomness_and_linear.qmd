@@ -407,7 +407,7 @@ The latter option is usually performed via t-test for one column of $X$ at a tim
 
 ## Extra variance
 
-When we look at the residuals, really this is just extra variance. It's misleading to call it "error" or "noise" although these are the common ways to refer to $\hat{\varepsilon}_i$. Let's consider two cases where the sources of extra variance are not well described as "error" or "noise".
+When we look at the residuals, really this is just extra variance. It's misleading to call it "error" or "noise" although these are the common ways to refer to $\hat{\varepsilon}_i$. Let's consider two cases where the sources of extra variance are not well described as "error" or "noise": the first will be when we leave out a relevant predictor, and the second when the slope is not constant across observations.
 
 We will switch from here on from the manual matrix computation of estimates to using R's built in linear model function `lm()`. We will use the *broom* package to show summary statistics from the linear model.
 
@@ -429,7 +429,17 @@ glance(fit) # more statistics
 
 ### 1. Effect of a missing predictor
 
-A simple one, what if we leave out a predictor?
+A seemingly simple situation: what if we leave out a predictor that explains variance in $y$?
+
+Another way to think about this, is that the "extra" is no longer drawn as independent values $\varepsilon_i$, with constant variance and expectation 0. Many times in experimental contexts we end up with errors which are not independent but correlated. In high dimensional data such as genomics, we may have correlations of errors that exhibit a shared structure across many features (e.g. genes). In genomics, this is referred to as batch effects.
+
+::: {.callout-note collapse="false"}
+## Question
+
+If the correlation structure of the errors is shared across many genes, what strategies could we use to estimate it?
+:::
+
+We will observe particular errors based on the missing value of $x_2$ and the value of $\beta_2$. This will have consequences on estimating $\beta_1$ in terms of power (i.e. sampling variance of estimator) and accuracy (i.e. bias of estimator).
 
 ```{r}
 fit_mis <- lm(y ~ 1 + x1)
@@ -474,9 +484,31 @@ One can derive that this second estimator for the slope associated with $x^1$, $
 
 ### 2. Conditional effects
 
-Simulate beta conditional on some value of an X variable
+A more complex situation: what if the $\beta$ are not fixed and equal for all observations?
 
-ATE, ATT, etc. link to Hernan book
+One situation that this may arise is if there are groups of samples which have a different value of $\beta$. It helps to extend from the idea of a single, fixed $\beta$ to the idea of a $\beta$ that is conditional on other either known or unknown variables, say $Z$.
+
+For a simple examination of what happens in this case, suppose we have three groups of observations:
+
+```{r}
+set.seed(5)
+n <- 90
+x1 <- rnorm(n, sd=0.5)
+z <- rep(0:2, each=n/3)
+X <- cbind(intercept=rep(1,n), x1)
+b <- c(5, 2) # keep working here....
+extra_sd <- 1
+extra <- rnorm(n, sd=extra_sd)
+y <- X %*% b + extra 
+fit <- lm(y ~ 1 + x1 + x2)
+library(broom)
+tidy(fit)
+glance(fit) 
+```
+
+ATE, ATT.
+
+[Hernán MA, Robins JM (2020). Causal Inference: What If. Boca Raton: Chapman & Hall/CRC](https://miguelhernan.org/whatifbook)
 
 ## What about wiggliness?
 
